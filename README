@@ -1,0 +1,28 @@
+# Yarp.SubDomainReverseProxyExample
+## Why
+I found the YARP documentation hard to follow around creating a reverse proxy by subdomain. The next hurdle was to create a https endpoint with valid TLS. This project is to show how appsettings.json can be used with YARP and Kestrel to acheive these two goals.
+
+## How to run
+1. Download and install dotnet
+2. Edit host file to route yarp.firmz.xyz to a webserver on your network
+3. Create valid TLS certificate with a valid domain and replace all ...firmz.xyz with your domain in appsettings.json
+4. cd into this directory and run `dotnet run` or in visual studios
+5. hit enpoints for your custom domain and see secure connection using https
+
+## Explaination
+Yarp uses routes and clusters to route traffic. The routes reprsent a collection of urls that the host takes in. Cluster repesents servers that YARP can route to. More can found in YARP's offical documentation https://microsoft.github.io/reverse-proxy/index.html. Kestrel needs to allow all host to hit the webserver so the following block is needed:
+```json
+ "Kestrel": {
+    "Endpoints": {
+        "HttpsInlineCertAndKeyFile": {
+         "Url": "https://*:443",
+         "Certificate": {
+           "Path": "fullchain.pem",
+           "KeyPath": "privkey.pem"
+        }
+      }
+    }
+  }
+```
+
+When the host tries to hit the endpoint at your domain YARP proxies it by using FDQ to route to correct cluster (if your host file is pointing toward the localhost).
